@@ -1,5 +1,5 @@
 from labyrinth_game.constants import ROOMS
-from labyrinth_game.utils import describe_current_room
+from labyrinth_game.utils import attempt_open_treasure, describe_current_room
 
 
 def get_input(prompt="> "):
@@ -53,5 +53,7 @@ def use_item(game_state, item_name):
             game_state['player_inventory'].append('rusty key')
         else:
             return
+    elif item_name in ['treasure chest']:
+        attempt_open_treasure(game_state)
     else:
         print("Вы не знаете, как использовать этот предмет.")
