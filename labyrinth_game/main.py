@@ -5,7 +5,7 @@ from labyrinth_game.player_actions import (
     take_item,
     use_item,
 )
-from labyrinth_game.utils import describe_current_room, solve_puzzle
+from labyrinth_game.utils import describe_current_room, show_help, solve_puzzle
 
 
 def process_command(game_state, command_line):
@@ -27,6 +27,8 @@ def process_command(game_state, command_line):
             use_item(game_state, arg)
         case 'solve':
             solve_puzzle(game_state)
+        case 'help':
+            show_help()
         case 'quit' | 'exit':
             game_state['game_over'] = True
         case _:
