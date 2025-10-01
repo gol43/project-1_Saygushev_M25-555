@@ -40,7 +40,7 @@ def main():
         'player_inventory': [], # Инвентарь игрока
         'current_room': 'entrance', # Текущая комната
         'game_over': False, # Значения окончания игры
-        'steps_taken': 1 # Количество шагов
+        'steps_taken': 0 # Количество шагов
     }
 
     print('Добро пожаловать в Лабиринт сокровищ!')
