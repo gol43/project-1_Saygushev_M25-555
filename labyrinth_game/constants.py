@@ -78,3 +78,22 @@ COMMANDS = {
     "quit": "выйти из игры",
     "help": "показать это сообщение",
 }
+
+
+PSEUDO_RANDOM_MULTIPLIER = 12.9898   # множитель для seed перед применением синуса
+
+PSEUDO_RANDOM_SPREAD = 43758.5453    # множитель для "размазывания" значений
+
+TRAP_DAMAGE_MODULO = 10      # диапазон для проверки урона
+
+TRAP_DEATH_THRESHOLD = 3     # если случайное число < этого — игрок погибает
+
+EVENT_PROBABILITY = 10 # диапазон для вероятности события
+
+TRAP_EVENT_TYPE_MODULO = 3       # количество возможных случайных событий
+
+FIND_COIN_EVENT = 0
+
+SCARE_EVENT = 1
+
+TRAP_EVENT = 2

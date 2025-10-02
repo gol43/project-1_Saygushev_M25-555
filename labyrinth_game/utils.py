@@ -1,9 +1,22 @@
 import math
 
-from labyrinth_game.constants import COMMANDS, ROOMS
+from labyrinth_game.constants import (
+    COMMANDS,
+    EVENT_PROBABILITY,
+    FIND_COIN_EVENT,
+    PSEUDO_RANDOM_MULTIPLIER,
+    PSEUDO_RANDOM_SPREAD,
+    ROOMS,
+    SCARE_EVENT,
+    TRAP_DAMAGE_MODULO,
+    TRAP_DEATH_THRESHOLD,
+    TRAP_EVENT,
+    TRAP_EVENT_TYPE_MODULO,
+)
 
 
 def describe_current_room(game_state):
+    """Описание комнаты"""
     room_name = game_state['current_room']
     room = ROOMS[room_name]
     
@@ -17,6 +30,7 @@ def describe_current_room(game_state):
 
 
 def solve_puzzle(game_state):
+    """Решение загадок"""
     room_name = game_state['current_room']
     puzzle = ROOMS[room_name]['puzzle']
     if room_name == 'treasure_room':
@@ -58,6 +72,7 @@ def solve_puzzle(game_state):
 
 
 def attempt_open_treasure(game_state):
+    """Открытие суперского кейса, который даёт победу"""
     room = ROOMS[game_state['current_room']]
     items = room['items']
     inventory = game_state['player_inventory']
@@ -96,18 +111,21 @@ def attempt_open_treasure(game_state):
 
 
 def show_help(commands: dict = COMMANDS):
+    """Помощь игроку в командах"""
     print("\nДоступные команды:")
     for cmd, desc in commands.items():
         print(f"  {cmd:<16} - {desc}")
 
 
 def pseudo_random(seed, modulo):
-    x = math.sin(seed * 12.9898) * 43758.5453
+    """Псевдо рандом, хотя и нет"""
+    x = math.sin(seed * PSEUDO_RANDOM_MULTIPLIER) * PSEUDO_RANDOM_SPREAD
     frac = x - math.floor(x)
     return int(frac * modulo)
 
 
 def trigger_trap(game_state):
+    """Логика ловушек"""
     print("Ловушка активирована! Пол стал дрожать...")
     inventory = game_state['player_inventory']
     seed = game_state['steps_taken']
@@ -116,8 +134,8 @@ def trigger_trap(game_state):
         name_of_deleted_item = inventory.pop(idx_for_delete_item)
         print(f"Вы потеряли предмет: {name_of_deleted_item}!")
     else:
-        damage_roll = pseudo_random(seed, 10)
-        if damage_roll < 3:
+        damage_roll = pseudo_random(seed, TRAP_DAMAGE_MODULO)
+        if damage_roll < TRAP_DEATH_THRESHOLD:
             print("Вы попали в ловушку и не выжили. Игра окончена.")
             game_state['game_over'] = True
         else:
@@ -125,24 +143,25 @@ def trigger_trap(game_state):
 
 
 def random_event(game_state: dict):
+    """Случайное событие, которые как бы не случайное"""
     room = game_state['current_room']
     steps =  game_state['steps_taken']
     current_room = ROOMS[room]
-    if pseudo_random(steps, 10) != 0:
+    if pseudo_random(steps, EVENT_PROBABILITY) != 0:
         return
 
-    event_type = pseudo_random(steps + 1, 3)
+    event_type = pseudo_random(steps + 1, TRAP_EVENT_TYPE_MODULO)
 
-    if event_type == 0: # Находка монетки
+    if event_type == FIND_COIN_EVENT: # Находка монетки
         print("Вы находите на полу монетку.")
         current_room['items'].append('coin')
 
-    elif event_type == 1: # Испуг
+    elif event_type == SCARE_EVENT: # Испуг
         print("Вы слышите шорох. Вам должно быть страшно.")
         if 'sword' in game_state['player_inventory']:
             print("Но ваш меч отпугнул существо.")
 
-    elif event_type == 2:  # Ловушка
+    elif event_type == TRAP_EVENT:  # Ловушка
         if (room == 'trap_room'
             and 'torch' not in game_state['player_inventory']):
             print("Опасность! Ловушка может сработать.")

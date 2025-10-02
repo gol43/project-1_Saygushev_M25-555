@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "project-1-saygushev-m25-555"
 version = "0.1.0"
-description = ""
+description = "Захватывающая консольная игра на Python, где вы отправитесь в увлекательное приключение по таинственному лабиринту!"
 authors = ["Сайгушев Дамир <saigh06@gmail.com>"]
 readme = "README.md"
 packages = [
