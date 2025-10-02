@@ -1,5 +1,6 @@
-from labyrinth_game.constants import ROOMS
 import math
+
+from labyrinth_game.constants import COMMANDS, ROOMS
 
 
 def describe_current_room(game_state):
@@ -24,12 +25,34 @@ def solve_puzzle(game_state):
     if puzzle:
         print(puzzle[0])
         answer = input('Введите овтет: ').strip().lower()
-        if answer == puzzle[1]:
+        ok = False
+        if puzzle[1] == '10':
+            if answer in ['10', 'десять']:
+                ok = True
+        else:
+            if answer == puzzle[1].lower():
+                ok = True
+        
+        if ok:
             print("Вы успешно решили загадку!")
             ROOMS[room_name]['puzzle'] = None
-            game_state['player_inventory'].append('treasure_key')
+
+            if room_name == 'hall':
+                reward = 'treasure_key'
+            elif room_name == 'library':
+                reward = 'rusty_key'
+            elif room_name == 'trap_room':
+                reward == 'treasure_key'
+            elif room_name == 'armory':
+                reward == 'rusty_key'
+
+            if reward not in game_state['player_inventory']:
+                game_state['player_inventory'].append(reward)
+                print(f"Вы получили награду: {reward}")
         else:
             print("Неверно. Попробуйте снова.")
+            if room_name == 'trap_room':
+                trigger_trap(game_state)
     else:
         print('Загадок здесь нет.')
 
@@ -39,49 +62,43 @@ def attempt_open_treasure(game_state):
     items = room['items']
     inventory = game_state['player_inventory']
 
-    if ('treasure chest' not in items and 'treasure chest' not in inventory):
-        print("Сундук уже открыт или отсутствует.")
-        return
+    # Я не понял, нужно это или нет.
+    # if ('treasure_chest' not in items and 'treasure_chest' not in inventory):
+    #     print("Сундук уже открыт или отсутствует.")
+    #     return
     
-    if ('treasure_key' in inventory or 'rusty_key' in inventory):
+    if 'treasure_key' in inventory:
         print("Вы применяете ключ, и замок щёлкает. Сундук открыт!")
-        items.remove('treasure chest')
+        items.remove('treasure_chest')
         print("В сундуке сокровище! Вы победили!")
         game_state['game_over'] = True
-        return
-
-    message = "Сундук заперт. ... Ввести код? (да/нет)\nВаше решение: "
-    answer = input(message).strip().lower()
-
-    if answer == 'да':
-        puzzle_text, puzzle_answer = room['puzzle']
-        message = (
-            "Введите код:\n"
-            f"P.S. код это решение загадки:\n{puzzle_text} "
-        )
-        code = input(message).strip().lower()
-
-        if puzzle_answer and code == puzzle_answer.lower():
-            print("Вы открыли сундук с кодом! Победа!")
-            if 'treasure chest' in items:
-                items.remove('treasure chest')
-            game_state['game_over'] = True
-        else:
-            print('Неверный код!')
     else:
-        print('Вы отступаете от сундука.')
+        message = "Сундук заперт. ... Ввести код? (да/нет)\nВаше решение: "
+        answer = input(message).strip().lower()
+
+        if answer == 'да':
+            puzzle_text, puzzle_answer = room['puzzle']
+            message = (
+                "Введите код:\n"
+                f"P.S. код это решение загадки:\n{puzzle_text} "
+            )
+            code = input(message).strip().lower()
+
+            if puzzle_answer and code == puzzle_answer.lower():
+                print("Вы открыли сундук с кодом! Победа!")
+                if 'treasure_chest' in items:
+                    items.remove('treasure_chest')
+                game_state['game_over'] = True
+            else:
+                print('Неверный код!')
+        else:
+            print('Вы отступаете от сундука.')
 
 
-def show_help():
+def show_help(commands: dict = COMMANDS):
     print("\nДоступные команды:")
-    print("  go <direction>  - перейти в направлении (north/south/east/west)")
-    print("  look            - осмотреть текущую комнату")
-    print("  take <item>     - поднять предмет")
-    print("  use <item>      - использовать предмет из инвентаря")
-    print("  inventory       - показать инвентарь")
-    print("  solve           - попытаться решить загадку в комнате")
-    print("  quit            - выйти из игры")
-    print("  help            - показать это сообщение") 
+    for cmd, desc in commands.items():
+        print(f"  {cmd:<16} - {desc}")
 
 
 def pseudo_random(seed, modulo):

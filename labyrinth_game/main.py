@@ -5,15 +5,26 @@ from labyrinth_game.player_actions import (
     take_item,
     use_item,
 )
-from labyrinth_game.utils import describe_current_room, show_help, solve_puzzle
+from labyrinth_game.utils import (
+    attempt_open_treasure,
+    describe_current_room,
+    show_help,
+    solve_puzzle,
+)
 
 
 def process_command(game_state, command_line):
     parts = command_line.strip().split()
     if not parts:
         return
+
     cmd, *args = parts
     arg = ' '.join(args)
+
+    if cmd in ("north", "south", "east", "west"):
+        move_player(game_state, cmd)
+        return
+
     match cmd:
         case 'look':
             describe_current_room(game_state)
@@ -26,15 +37,18 @@ def process_command(game_state, command_line):
         case 'use':
             use_item(game_state, arg)
         case 'solve':
-            solve_puzzle(game_state)
+            if game_state["current_room"] == "treasure_room":
+                attempt_open_treasure(game_state)
+            else:
+                solve_puzzle(game_state)
         case 'help':
             show_help()
         case 'quit' | 'exit':
             game_state['game_over'] = True
         case _:
             print("Неизвестная команда. Введите help для списка команд.")
-            
-    
+
+
 def main():
     game_state = {
         'player_inventory': [], # Инвентарь игрока
@@ -48,7 +62,6 @@ def main():
     while not game_state['game_over']:
         command = get_input("> ")
         process_command(game_state, command)
-
 
 
 if __name__ == "__main__":

@@ -1,5 +1,8 @@
 from labyrinth_game.constants import ROOMS
-from labyrinth_game.utils import attempt_open_treasure, describe_current_room, random_event
+from labyrinth_game.utils import (
+    describe_current_room,
+    random_event,
+)
 
 
 def get_input(prompt="> "):
@@ -21,10 +24,22 @@ def move_player(game_state, direction):
     current_room = game_state['current_room']
     exits = ROOMS[current_room]['exits']
     if direction in exits:
-        game_state['current_room'] = exits[direction]
-        game_state['steps_taken'] += 1
-        describe_current_room(game_state)
-        random_event(game_state)
+        if exits[direction] == 'treasure_room':
+            if 'rusty_key' not in game_state['player_inventory']:
+                print('Дверь заперта. Нужен ключ, чтобы пройти дальше.')
+                return
+            else:
+                print('Вы используете найденный ключ, ' \
+                'чтобы открыть путь в комнату сокровищ.')
+                game_state['current_room'] = exits[direction]
+                game_state['steps_taken'] += 1
+                describe_current_room(game_state)
+                random_event(game_state)
+        else:
+            game_state['current_room'] = exits[direction]
+            game_state['steps_taken'] += 1
+            describe_current_room(game_state)
+            random_event(game_state)
     else:
         print("Нельзя пойти в этом направлении.")
 
@@ -33,6 +48,8 @@ def take_item(game_state, item_name):
     current_room = game_state['current_room']
     items = ROOMS[current_room]['items']
     if item_name in items:
+        if item_name == 'treasure_chest':
+            print('Вы не можете поднять сундук, он слишком тяжелый.')
         game_state['player_inventory'].append(item_name)
         ROOMS[current_room]['items'].remove(item_name)
         print(f'Вы подняли: {item_name}')
@@ -50,11 +67,12 @@ def use_item(game_state, item_name):
         print("Вы стали увереннее в себе")
     elif item_name == 'bronze box':
         print("Вы открыли бронзовую шкатулку.")
-        if 'rusty key' not in game_state['player_inventory']:
-            game_state['player_inventory'].append('rusty key')
+        if 'rusty_key' not in game_state['player_inventory']:
+            game_state['player_inventory'].append('rusty_key')
         else:
             return
-    elif item_name in ['treasure chest']:
-        attempt_open_treasure(game_state)
+    # Я так понял, что это убрали. 
+    # elif item_name in ['treasure_chest']:
+    #     attempt_open_treasure(game_state)
     else:
         print("Вы не знаете, как использовать этот предмет.")
